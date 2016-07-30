@@ -147,7 +147,7 @@ class Photobooth(object):
                 # Handle Flash Pin
                 GPIO.setup(pins['indicator'], GPIO.OUT)    # flash relay
                 # Turn off flash relay
-                GPIO.output(pins['indicator'], False)
+                GPIO.output(pins['indicator'], True)
 
             elif action is 'shutdown':
                 GPIO.setup(pins['button'], GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -202,7 +202,7 @@ class Photobooth(object):
             self.running = False
             self.displayStatus("Please hang on while Photobooth exits.")
             self.indicatorsOff()
-            GPIO.output(Photobooth.gpioPins['flash']['indicator'], False)
+            GPIO.output(Photobooth.gpioPins['flash']['indicator'], True)
             sleep(2)
             GPIO.cleanup()
             pygame.quit()
@@ -214,7 +214,7 @@ class Photobooth(object):
             self.running = False
             self.displayStatus("Shutting down photobooth.")
             self.indicatorsOff()
-            GPIO.output(Photobooth.gpioPins['flash']['indicator'], False)
+            GPIO.output(Photobooth.gpioPins['flash']['indicator'], True)
             sleep(2)
             GPIO.cleanup()
         os.system("sudo halt")
@@ -271,13 +271,13 @@ class Photobooth(object):
     def flashOn(self):
         for action, pins in Photobooth.gpioPins.iteritems():
             if action is 'flash':
-                GPIO.output(pins['indicator'], True)
+                GPIO.output(pins['indicator'], False)
 
     # turn off Flash
     def flashOff(self):
         for action, pins in Photobooth.gpioPins.iteritems():
             if action is 'flash':
-                GPIO.output(pins['indicator'], False)
+                GPIO.output(pins['indicator'], True)
 
     # capture image from camera
     def takePictures(self, imgPath, numPics=4):
@@ -358,7 +358,9 @@ class Photobooth(object):
         # self.displayStatus('Printing')
         conn = cups.Connection()
         printers = conn.getPrinters()
-        printer_name = printers.keys()[1]
+        printer_name = printers.keys()[0]
+        self.displayStatus(printer_name)
+        sleep(5)
         conn.printFile(printer_name,
                        imgPath + '/photocard.jpg',
                        imgPath, {'StpiShrinkOutput': 'Expand',
@@ -383,7 +385,7 @@ class Photobooth(object):
                 sleep(0.1)
                 self.flashOff()
                 self.combineImages(now)
-                # self.printCard(now)
+                self.printCard(now)
                 self.currentAction = None
                 self.nextPrinter()
 
